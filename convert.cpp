@@ -86,25 +86,30 @@ int do_convert(char *skindir) {
     // fcitxconf.setValue("FirstCandColor", QString(buf));
 
     // zhongwen_first_color => UserPhraseColor
+    val = ssfconf.value("pinyin_color");
+    ptr = val.toString().toInt(nullptr, 16);
+    // PSST: sogou is fxxking your brain with out of order RGB string, they use BGR instead ,so we need to translate here
+    sprintf(buf, "%d %d %d", ptr & 0x0000FF, (ptr & 0x00FF00) >> 8, (ptr & 0xFF0000) >> 16);
+    fcitxconf.setValue("UserPhraseColor", QString(buf));
+    fcitxconf.setValue("InputColor", QString(buf));
+    fcitxconf.setValue("CodeColor", QString(buf));
+
+    val = ssfconf.value("zhongwen_first_color");
+    ptr = val.toString().toInt(nullptr, 16);
+    sprintf(buf, "%d %d %d", ptr & 0x0000FF, (ptr & 0x00FF00) >> 8, (ptr & 0xFF0000) >> 16);
+    fcitxconf.setValue("FirstCandColor", QString(buf));
+
     val = ssfconf.value("zhongwen_color");
     ptr = val.toString().toInt(nullptr, 16);
-    sprintf(buf, "%d %d %d", (ptr & 0xFF0000) >> 16, (ptr & 0x00FF00) >> 8, ptr & 0x0000FF);
-    fcitxconf.setValue("UserPhraseColor", QString(buf));
-
-    val = ssfconf.value("comphint_color");
-    ptr = val.toString().toInt(nullptr, 16);
-    sprintf(buf, "%d %d %d", (ptr & 0xFF0000) >> 16, (ptr & 0x00FF00) >> 8, ptr & 0x0000FF);
-    fcitxconf.setValue("CodeColor", QString(buf));
+    sprintf(buf, "%d %d %d", ptr & 0x0000FF, (ptr & 0x00FF00) >> 8, (ptr & 0xFF0000) >> 16);
     fcitxconf.setValue("OtherColor", QString(buf));
-    fcitxconf.setValue("FirstCandColor", QString(buf));
+    fcitxconf.setValue("IndexColor", QString(buf));
+
 
     fcitxconf.setValue("TipColor", "37 191 237");
     // fcitxconf.setValue("OtherColor", "255 223 231"); // OtherColor = FirstCandidColor = comphint color
     fcitxconf.setValue("ActiveMenuColor", "204 41 76");
     fcitxconf.setValue("InactiveMenuColor", "255 223 231");
-    fcitxconf.setValue("IndexColor", "128 0 0");
-    // TODO: Input Color is the color for the input string(那一串拼音), but I don't found it in sogou config
-    fcitxconf.setValue("InputColor", "244 208 0");
 
     fcitxconf.endGroup();
     ssfconf.endGroup();
