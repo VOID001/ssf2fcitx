@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <QVector>
 #include <QTextCodec>
+#include <QtGui/QPixmap>
 
 #define MAX_CHARS 255
 
@@ -79,10 +80,10 @@ int do_convert(char *skindir) {
     // zhongwen_first_color => FirstCandColor
     auto val = ssfconf.value("zhongwen_first_color");
     uint32_t ptr = val.toString().toInt(nullptr, 16);
-    printf("%X", ptr);
+    // printf("%X", ptr);
     char buf[MAX_CHARS];
     sprintf(buf, "%d %d %d", (ptr & 0xFF0000) >> 16, (ptr & 0x00FF00) >> 8, ptr & 0x0000FF);
-    fcitxconf.setValue("FirstCandColor", QString(buf));
+    // fcitxconf.setValue("FirstCandColor", QString(buf));
 
     // zhongwen_first_color => UserPhraseColor
     val = ssfconf.value("zhongwen_color");
@@ -94,12 +95,15 @@ int do_convert(char *skindir) {
     ptr = val.toString().toInt(nullptr, 16);
     sprintf(buf, "%d %d %d", (ptr & 0xFF0000) >> 16, (ptr & 0x00FF00) >> 8, ptr & 0x0000FF);
     fcitxconf.setValue("CodeColor", QString(buf));
+    fcitxconf.setValue("OtherColor", QString(buf));
+    fcitxconf.setValue("FirstCandColor", QString(buf));
 
     fcitxconf.setValue("TipColor", "37 191 237");
-    fcitxconf.setValue("OtherColor", "255 223 231");
+    // fcitxconf.setValue("OtherColor", "255 223 231"); // OtherColor = FirstCandidColor = comphint color
     fcitxconf.setValue("ActiveMenuColor", "204 41 76");
     fcitxconf.setValue("InactiveMenuColor", "255 223 231");
     fcitxconf.setValue("IndexColor", "128 0 0");
+    // TODO: Input Color is the color for the input string(那一串拼音), but I don't found it in sogou config
     fcitxconf.setValue("InputColor", "244 208 0");
 
     fcitxconf.endGroup();
@@ -111,12 +115,31 @@ int do_convert(char *skindir) {
     fcitxconf.setValue("BackImg", ssfconf.value("pic"));
     fcitxconf.setValue("FillHorizontal", "Copy");
     fcitxconf.setValue("CursorColor", "255 255 255");
-    fcitxconf.setValue("MarginLeft", 50);
-    fcitxconf.setValue("MarginRight", 180);
-    fcitxconf.setValue("MarginBottom", 162);
-    fcitxconf.setValue("MarginTop", 27);
+    // TODO: 搞清楚 Margin 的关系，优先搞清楚 SkinInputBar 的
+    // TODO: Read the fcitx skin code and draw the margin picture
+
+    // we need to open the picture first
+    QString input_bar_file_name = ssfconf.value("pic").toString();
+    QImage input_bar_pixmap(dir.filePath(input_bar_file_name));
+    if(input_bar_pixmap.isNull()) {
+        fprintf(stderr, "FAIL TO OPEN file %s", input_bar_file_name.toStdString().c_str());
+        exit(-1);
+    }
+    int pixw = input_bar_pixmap.width();
+    int pixh = input_bar_pixmap.height();
+    std::cout << "W=" << pixw << std::endl << "H=" << pixh << std::endl;
+
+    int marge_left = ssfconf.value("pinyin_marge").toStringList().at(2).toInt();
+
+    fcitxconf.setValue("MarginLeft", marge_left);
+    fcitxconf.setValue("MarginRight", pixw / 2);
+    // TODO: the +- 50 is magic here, we need to change it
+    fcitxconf.setValue("MarginBottom", pixh / 2 - 50);
+    fcitxconf.setValue("MarginTop", pixh / 2 + 50);
     fcitxconf.setValue("InputPos", 0);
     fcitxconf.setValue("OutputPos", 4);
+    // TODO: generate back arrow and forward arrow for fcitx
+    // TODO: STUB NOW
     fcitxconf.setValue("BackArrow", "prev.png");
     fcitxconf.setValue("ForwardArrow", "next.png");
     fcitxconf.setValue("BackArrowX", 140);
@@ -132,7 +155,7 @@ int do_convert(char *skindir) {
 
     fcitxconf.setValue("BackImg", ssfconf.value("pic"));
     QStringList cn_en_list = ssfconf.value("cn_en").toStringList();
-    // TODO: CPP IS SHIT! The below line won't output anything
+    // TODO: QSettings IS SHIT! The below line won't output anything
     std::cout << ssfconf.value("cn_en").toString().split(",").join(",").toStdString() << std::endl;
     fcitxconf.setValue("Active", cn_en_list.at(0));
     fcitxconf.setValue("Eng", cn_en_list.at(1));
