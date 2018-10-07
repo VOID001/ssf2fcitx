@@ -18,6 +18,8 @@
 
 #define MAX_CHARS 255
 
+const double pt2px_scale = 1.333;
+
 char convert_from_keys[][MAX_CHARS] = {
         "General/zhongwen_first_color",
 };
@@ -74,6 +76,8 @@ int do_convert(char *skindir) {
     ssfconf.beginGroup("Display");
     fcitxconf.beginGroup("SkinFont");
     fcitxconf.setValue("FontSize", ssfconf.value("font_size").toInt());
+    // we need to add font_pix to the offset
+    int font_pix = (int)(ssfconf.value("font_size").toInt() * pt2px_scale);
     fcitxconf.setValue("MenuFontSize", ssfconf.value("font_size").toInt() - 3);
     fcitxconf.setValue("RespectDPI", true);
 
@@ -134,15 +138,46 @@ int do_convert(char *skindir) {
     int pixh = input_bar_pixmap.height();
     std::cout << "W=" << pixw << std::endl << "H=" << pixh << std::endl;
 
-    int marge_left = ssfconf.value("pinyin_marge").toStringList().at(2).toInt();
+    int marge_left = ssfconf.value("layout_horizontal").toStringList().at(1).toInt();
+    int marge_right = ssfconf.value("layout_horizontal").toStringList().at(2).toInt();
 
-    fcitxconf.setValue("MarginLeft", marge_left);
-    fcitxconf.setValue("MarginRight", pixw / 2);
-    // TODO: the +- 50 is magic here, we need to change it
-    fcitxconf.setValue("MarginBottom", pixh / 2 - 50);
-    fcitxconf.setValue("MarginTop", pixh / 2 + 50);
-    fcitxconf.setValue("InputPos", 0);
-    fcitxconf.setValue("OutputPos", 4);
+    // if (marge_left > marge_right) {
+    //     int tmp = marge_right;
+    //     marge_right = marge_left;
+    //     marge_left = tmp;
+    // }
+
+    int marge_top = ssfconf.value("layout_vertical").toStringList().at(1).toInt();
+    int marge_bot = ssfconf.value("layout_vertical").toStringList().at(2).toInt();
+
+    // if (marge_top > marge_bot) {
+    //     int tmp = marge_top;
+    //     marge_top = marge_bot;
+    //     marge_bot = tmp;
+    // }
+
+    // Try this version
+
+    // TODO: Fix input pos and output pos
+    int pinyin_marge_top = ssfconf.value("pinyin_marge").toStringList().at(0).toInt();
+    int pinyin_marge_left = ssfconf.value("pinyin_marge").toStringList().at(2).toInt();
+    int pinyin_marge_right = ssfconf.value("pinyin_marge").toStringList().at(3).toInt();
+
+    int zhongwen_marge_bot = ssfconf.value("zhongwen_marge").toStringList().at(1).toInt();
+
+    int sep_zhongwen = ssfconf.value("zhongwen_marge").toStringList().at(0).toInt();
+    int sep_pinyin = ssfconf.value("pinyin_marge").toStringList().at(1).toInt();
+
+    fcitxconf.setValue("MarginLeft", pinyin_marge_left);
+    fcitxconf.setValue("MarginRight", pinyin_marge_right);
+    fcitxconf.setValue("MarginTop", pinyin_marge_top + font_pix);
+    fcitxconf.setValue("MarginBottom", marge_bot - font_pix);
+
+    //  val < 0 means offset up, > 0 means down
+    // fcitxconf.setValue("InputPos", pinyin_marge_top - marge_top);
+    // fcitxconf.setValue("OutputPos", pixh - marge_bot - zhongwen_marge_bot);
+    fcitxconf.setValue("InputPos",  -font_pix / 2 + -sep_pinyin / 2);
+    fcitxconf.setValue("OutputPos", font_pix / 2 + sep_zhongwen / 2);
     // TODO: generate back arrow and forward arrow for fcitx
     // TODO: STUB NOW
     fcitxconf.setValue("BackArrow", "prev.png");
@@ -160,12 +195,13 @@ int do_convert(char *skindir) {
 
     fcitxconf.setValue("BackImg", ssfconf.value("pic"));
     QStringList cn_en_list = ssfconf.value("cn_en").toStringList();
-    // TODO: QSettings IS SHIT! The below line won't output anything
+    // QSettings IS SHIT! The below line won't output anything
     std::cout << ssfconf.value("cn_en").toString().split(",").join(",").toStdString() << std::endl;
     fcitxconf.setValue("Active", cn_en_list.at(0));
     fcitxconf.setValue("Eng", cn_en_list.at(1));
     fcitxconf.setValue("Logo", "logo.png");
 
+    // TODO: fix the margin
     fcitxconf.setValue("MarginLeft", 45);
     fcitxconf.setValue("MarginRight", 50);
     fcitxconf.setValue("MarginBottom", 25);
@@ -183,6 +219,7 @@ int do_convert(char *skindir) {
     fcitxconf.setValue("Inactive", "inactive.png");
     fcitxconf.endGroup();
 
+    // TODO: fix the margin, not so high priority
     fcitxconf.beginGroup("SkinMenu");
     fcitxconf.setValue("BackImg", "menu.png");
     fcitxconf.setValue("MarginLeft", 50);
