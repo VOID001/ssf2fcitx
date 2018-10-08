@@ -92,15 +92,15 @@ int do_extract(QByteArray& input, char *dirname) {
         QString filename = QString::fromUtf16((quint16*)utf16str, name_len / 2);
         delete[] utf16str;
 
-        std::cout << "Create file " + filename.toStdString() << std::endl;
+        std::cout << "Create file " + filename.toLower().toStdString() << std::endl;
 
         uint32_t content_len;
         ds >> content_len;
         // Now we can read the content
 
         skindir.cd(dirstr);
-        std::cout << skindir.filePath(filename).toStdString() << std::endl;
-        QFile f(skindir.filePath(filename));
+        std::cout << skindir.filePath(filename).toLower().toStdString() << std::endl;
+        QFile f(skindir.filePath(filename).toLower());
         f.open(QFile::ReadWrite);
         QByteArray buf;
         buf.resize(content_len);

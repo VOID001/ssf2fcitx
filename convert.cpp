@@ -121,14 +121,14 @@ int do_convert(char *skindir) {
     ssfconf.beginGroup("Scheme_H1");
     fcitxconf.beginGroup("SkinInputBar");
 
-    fcitxconf.setValue("BackImg", ssfconf.value("pic"));
+    fcitxconf.setValue("BackImg", ssfconf.value("pic").toString().toLower());
     fcitxconf.setValue("FillHorizontal", "Copy");
     fcitxconf.setValue("CursorColor", "255 255 255");
     // TODO: 搞清楚 Margin 的关系，优先搞清楚 SkinInputBar 的
     // TODO: Read the fcitx skin code and draw the margin picture
 
     // we need to open the picture first
-    QString input_bar_file_name = ssfconf.value("pic").toString();
+    QString input_bar_file_name = ssfconf.value("pic").toString().toLower();
     QImage input_bar_pixmap(dir.filePath(input_bar_file_name));
     if(input_bar_pixmap.isNull()) {
         fprintf(stderr, "FAIL TO OPEN file %s", input_bar_file_name.toStdString().c_str());
@@ -198,7 +198,7 @@ int do_convert(char *skindir) {
     ssfconf.beginGroup("StatusBar");
     fcitxconf.beginGroup("SkinMainBar");
 
-    fcitxconf.setValue("BackImg", ssfconf.value("pic"));
+    fcitxconf.setValue("BackImg", ssfconf.value("pic").toString().toLower());
     QStringList cn_en_list = ssfconf.value("cn_en").toStringList();
     // QSettings IS SHIT! The below line won't output anything
     std::cout << ssfconf.value("cn_en").toString().split(",").join(",").toStdString() << std::endl;
