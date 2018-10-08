@@ -168,16 +168,21 @@ int do_convert(char *skindir) {
     int sep_zhongwen = ssfconf.value("zhongwen_marge").toStringList().at(0).toInt();
     int sep_pinyin = ssfconf.value("pinyin_marge").toStringList().at(1).toInt();
 
-    fcitxconf.setValue("MarginLeft", pinyin_marge_left);
-    fcitxconf.setValue("MarginRight", pinyin_marge_right);
+    // TODO: 在搜狗里对于输入区域的左右对齐是有另外调整的，可是在 fcitx 里就只有管理九宫格的 MargineLeft 和 Right 同时用来控制对齐，这其实就有些难受了
+    fcitxconf.setValue("MarginLeft", marge_left);
+    fcitxconf.setValue("MarginRight",  marge_right);
+
     fcitxconf.setValue("MarginTop", pinyin_marge_top + font_pix);
-    fcitxconf.setValue("MarginBottom", marge_bot - font_pix);
+    fcitxconf.setValue("MarginBottom", pixh - font_pix - sep_zhongwen - font_pix - pinyin_marge_top);
 
     //  val < 0 means offset up, > 0 means down
     // fcitxconf.setValue("InputPos", pinyin_marge_top - marge_top);
     // fcitxconf.setValue("OutputPos", pixh - marge_bot - zhongwen_marge_bot);
-    fcitxconf.setValue("InputPos",  -font_pix / 2 + -sep_pinyin / 2);
-    fcitxconf.setValue("OutputPos", font_pix / 2 + sep_zhongwen / 2);
+
+    fcitxconf.setValue("InputPos", -sep_pinyin);
+    // fcitxconf.setValue("OutputPos", pixh - pinyin_marge_top - zhongwen_marge_bot - font_pix);
+    fcitxconf.setValue("OutputPos", font_pix + sep_zhongwen);
+
     // TODO: generate back arrow and forward arrow for fcitx
     // TODO: STUB NOW
     fcitxconf.setValue("BackArrow", "prev.png");
