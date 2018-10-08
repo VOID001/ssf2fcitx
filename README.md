@@ -19,6 +19,6 @@ Automagically convert your favorite sogou-pinyin skin to fcitx skin
 The following skins are convert directly from ssf, no any manual modifications
 
 
-
+![pic](https://github.com/VOID001/ssf2fcitx/raw/master/screenshot.png)
 
 
