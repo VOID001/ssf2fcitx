@@ -8,11 +8,10 @@ NOW ONLY support input bar skin translate, the tray and menu bar is not supporte
 * Qt5core
 * Qt5widgets
 * openssl
-* binary executable: iconv **(This is a bug, fix it later)**
 
 ## Usage
 
-1. `./ssf2fcitx /path/to/your/ssf /path/to/save/theme` execute the command **twice** (a known bug)
+1. `./ssf2fcitx /path/to/your/ssf /path/to/save/theme`
 2. copy the directory `/path/to/save/theme` to either $XDG_CONFIG_HOME/fcitx/skin or /usr/share/fcitx/skin
 3. Then you can switch to the theme, enjoy it!
 

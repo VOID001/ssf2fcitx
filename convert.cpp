@@ -28,43 +28,55 @@ char convert_to_keys[][MAX_CHARS] = {
 
 };
 
+void u16tou8(const char *filename_lower, const char *destname_lower) {
+    QFile file(filename_lower);
+    file.open(QFile::ReadOnly);
 
-int do_convert(char *skindir) {
+    QByteArray content = file.readAll();
+    auto u8_string = QString::fromUtf16((quint16 *)content.data(), content.size() / 2);
+#ifdef DEBUG
+    {
+        int cnt = 0;
+        for (auto i = 0; i < content.size(); i++) {
+            printf("0x%02X ", content.at(i) & 0xFF);
+            cnt++;
+            if(cnt == 10)
+                printf("\n", cnt = 0);
+        }
+    }
+    printf("\n=====================================================\n");
+    {
+        auto content = u8_string.toUtf8();
+        int cnt = 0;
+        for (auto i = 0; i < content.size(); i++) {
+            printf("0x%02X ", content.at(i) & 0xFF);
+            cnt++;
+            if (cnt == 10)
+                printf("\n", cnt = 0);
+        }
+    }
+#endif
+    QFile dest_file(destname_lower);
+    dest_file.open(QFile::ReadWrite);
+    dest_file.write(u8_string.toUtf8());
+    file.close();
+    dest_file.close();
+}
+
+int do_convert(const char *skindir) {
     /*
      * First convert config file to UTF8 encoding
      */
 
     // TODO: remove the iconv call
     QDir dir(skindir);
-    QProcess process;
-    QStringList args;
-    args.append("--from-code=UTF16");
-    args.append("--to-code=UTF8");
-    args.append(dir.filePath("skin.ini"));
-    args.append("--output=" + dir.filePath("skin.ini.u8"));
-    qint64 pid;
-
-    process.startDetached("iconv", args,  NULL, &pid);
-    usleep(10);
+    u16tou8(dir.absoluteFilePath("skin.ini").toStdString().c_str(), dir.absoluteFilePath("skin.ini.u8").toStdString().c_str());
 
     QSettings ssfconf(dir.filePath("skin.ini.u8"), QSettings::IniFormat);
     ssfconf.setIniCodec("UTF-8");
     QSettings fcitxconf(dir.filePath("fcitx_skin.conf"), QSettings::NativeFormat);
     fcitxconf.setIniCodec("UTF-8");
     fcitxconf.clear();
-    QStringList list = ssfconf.allKeys();
-
-    std::cout << dir.filePath("skin.ini").toStdString() << std::endl;
-    const char *fileName = dir.filePath("skin.ini").toStdString().c_str();
-
-    if(process.exitCode() != 0) {
-        std::cout << "Exit code not zero, code = " << process.exitCode() << std::endl;
-    }
-
-    for(auto x : list) {
-        auto key = x.toStdWString();
-        std::wcout << key << std::endl;
-    }
 
     fcitxconf.beginGroup("SkinInfo");
     fcitxconf.setValue("Name", "[CONVERT FROM SSF]" + ssfconf.value("skin_name").toString());
@@ -136,27 +148,13 @@ int do_convert(char *skindir) {
     }
     int pixw = input_bar_pixmap.width();
     int pixh = input_bar_pixmap.height();
-    std::cout << "W=" << pixw << std::endl << "H=" << pixh << std::endl;
+    // std::cout << "W=" << pixw << std::endl << "H=" << pixh << std::endl;
 
     int marge_left = ssfconf.value("layout_horizontal").toStringList().at(1).toInt();
     int marge_right = ssfconf.value("layout_horizontal").toStringList().at(2).toInt();
 
-    // if (marge_left > marge_right) {
-    //     int tmp = marge_right;
-    //     marge_right = marge_left;
-    //     marge_left = tmp;
-    // }
-
     int marge_top = ssfconf.value("layout_vertical").toStringList().at(1).toInt();
     int marge_bot = ssfconf.value("layout_vertical").toStringList().at(2).toInt();
-
-    // if (marge_top > marge_bot) {
-    //     int tmp = marge_top;
-    //     marge_top = marge_bot;
-    //     marge_bot = tmp;
-    // }
-
-    // Try this version
 
     // TODO: Fix input pos and output pos
     int pinyin_marge_top = ssfconf.value("pinyin_marge").toStringList().at(0).toInt();
@@ -238,4 +236,5 @@ int do_convert(char *skindir) {
 
     return 0;
 }
+
 

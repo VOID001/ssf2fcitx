@@ -34,7 +34,7 @@ int do_uncompress(const unsigned char *ssfbin, int size, QByteArray& unpackedarr
 
     // We now get the decrypted data
 
-    fprintf(stderr, "Decrypt success, writing to stdout\n");
+    // fprintf(stderr, "Decrypt success, writing to stdout\n");
 
     // FILE *fout = stdout;
     FILE *fout = fopen("dump.out", "wb");
@@ -57,7 +57,7 @@ int do_uncompress(const unsigned char *ssfbin, int size, QByteArray& unpackedarr
     return 0;
 }
 
-int do_extract(QByteArray& input, char *dirname) {
+int do_extract(QByteArray& input, const char *dirname) {
     QDataStream ds(&input, QIODevice::ReadOnly);
 
     // parse the size and header size
@@ -89,18 +89,18 @@ int do_extract(QByteArray& input, char *dirname) {
 
         char* utf16str = new char[name_len];
         ds.readRawData(utf16str, name_len);
-        QString filename = QString::fromUtf16((quint16*)utf16str, name_len / 2);
+        QString filename = QString::fromUtf16((quint16 *)utf16str, name_len / 2);
         delete[] utf16str;
 
-        std::cout << "Create file " + filename.toLower().toStdString() << std::endl;
+        // std::cout << "Create file " + filename.toLower().toStdString() << std::endl;
 
         uint32_t content_len;
         ds >> content_len;
         // Now we can read the content
 
         skindir.cd(dirstr);
-        std::cout << skindir.filePath(filename).toLower().toStdString() << std::endl;
-        QFile f(skindir.filePath(filename).toLower());
+        // std::cout << skindir.filePath(filename).toLower().toStdString() << std::endl;
+        QFile f(skindir.absoluteFilePath(filename.toLower()));
         f.open(QFile::ReadWrite);
         QByteArray buf;
         buf.resize(content_len);
