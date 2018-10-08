@@ -33,3 +33,7 @@ The following skins are converted directly from ssf, no any manual modifications
 * The skin converted may have problem with left, right align, sometimes you need to manually adjust it (Just Change the value MarginLeft & MarginRight in skin config file
 
 
+## Acknowlegements
+
+* kimtoy for providing the ssf extraction process
+* csslayer for giving hints on fcitx skin drawing process
