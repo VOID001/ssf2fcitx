@@ -11,7 +11,7 @@ NOW ONLY support input bar skin translate, the tray and menu bar is not supporte
 
 ## Usage
 
-1. `./ssf2fcitx /path/to/your/ssf /path/to/save/theme`
+1. `./ssf2skin -i input.ssf -o output_dir`
 2. copy the directory `/path/to/save/theme` to either $XDG_CONFIG_HOME/fcitx/skin or /usr/share/fcitx/skin
 3. Then you can switch to the theme, enjoy it!
 
