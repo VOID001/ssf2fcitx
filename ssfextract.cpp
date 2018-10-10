@@ -6,11 +6,14 @@
 #include <iostream>
 #include <openssl/aes.h>
 #include <vector>
+#include <zip.h>
 #include <unitypes.h>
 #include <QByteArray>
 #include <QDataStream>
 #include <QFile>
 #include <QDir>
+
+#define MAX_BYTE 4096 * 1024
 
 int do_uncompress(const unsigned char *ssfbin, int size, QByteArray& unpackedarr) {
     static const unsigned char aeskey[] = {
@@ -28,32 +31,32 @@ int do_uncompress(const unsigned char *ssfbin, int size, QByteArray& unpackedarr
             0x8A,0x51,0xFD,0x05,0xDF,0x8C,0x5D,0x0F
     };
 
-    std::vector<unsigned char> out(size);
+    unsigned char *out;
+    out = new unsigned char[MAX_BYTE];  // max 4 MB ssf data
 
-    AES_cbc_encrypt(ssfbin + 8, out.data(), size - 8, &key, iv, AES_DECRYPT);
+    // TODO: if the pack is not encrypted, just decompress it
+    bool encrypted_archive = false;
+    if(ssfbin[0] == 'S' && ssfbin[1] == 'k' && ssfbin[2] == 'i' && ssfbin[3] == 'n') {
+        encrypted_archive = true;
+    }
 
-    // We now get the decrypted data
+    if(encrypted_archive) {
+        AES_cbc_encrypt(ssfbin + 8, out, size - 8, &key, iv, AES_DECRYPT);
+        uint32_t *ptr = (uint32_t *)out;
+        uint32_t swapped = __builtin_bswap32 (ptr[0]);
+        ptr[0] = swapped;
 
-    // fprintf(stderr, "Decrypt success, writing to stdout\n");
+        // do the uncompress now
+        QByteArray rawdata = QByteArray((const char *)out, size);
+        unpackedarr = qUncompress(rawdata);
 
-    // FILE *fout = stdout;
-    FILE *fout = fopen("dump.out", "wb");
+    } else {
+        std::cout << "Sorry, but we don't directly support unencrypted archive now" << std::endl;
+        std::cout << "Please unzip the ssf file and use option -c (convert only) and set the input path to the unzipped dir." << std::endl;
+        exit(-1);
+    }
 
-    // do the byte order swap
-    uint32_t *ptr = (uint32_t *)out.data();
-    uint32_t swapped = __builtin_bswap32 (ptr[0]);
-    ptr[0] = swapped;
-
-    // We need to do the uncompress now
-
-    QByteArray rawdata = QByteArray((const char *)out.data(), size);
-    // QByteArray unpackedarr;
-    unpackedarr = qUncompress(rawdata);
-
-    fwrite((void *)unpackedarr.data(), sizeof(unsigned char), unpackedarr.size(), fout);
-    fclose(fout);
-
-
+    delete(out);
     return 0;
 }
 

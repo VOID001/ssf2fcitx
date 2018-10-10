@@ -198,8 +198,10 @@ int do_convert(const char *skindir) {
 
     fcitxconf.setValue("BackImg", ssfconf.value("pic").toString().toLower());
     QStringList cn_en_list = ssfconf.value("cn_en").toStringList();
+
     // QSettings IS SHIT! The below line won't output anything
-    std::cout << ssfconf.value("cn_en").toString().split(",").join(",").toStdString() << std::endl;
+    // std::cout << ssfconf.value("cn_en").toString().split(",").join(",").toStdString() << std::endl;
+
     fcitxconf.setValue("Active", cn_en_list.at(0));
     fcitxconf.setValue("Eng", cn_en_list.at(1));
     fcitxconf.setValue("Logo", "logo.png");

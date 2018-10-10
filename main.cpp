@@ -6,17 +6,74 @@
 #include <openssl/aes.h>
 #include <QByteArray>
 #include <iostream>
+#include <getopt.h>
+#include <errno.h>
 
 #define MAX_BYTE 1024 * 1024
 
 int do_uncompress(const unsigned char *ssfbin, int size, QByteArray&);
 int do_extract(QByteArray& input, const char *dirname);
 int do_convert(const char *skindir);
+void init_logger();
+void help(char *progname);
+
+const struct option opts[] = {
+        {"input", required_argument, 0, 0},
+        {"output", required_argument, 0, 0},
+        {0, 0, 0, 0}
+};
+
+const char default_dest[] = "skin_converted";
+
+QMessageLogger LOG;
 
 // usage: take the input file name from command line arg, and produce dump.out in the current directory
 int main(int argc, char **argv) {
-    // FILE *fin = stdin;
-    FILE *fin = fopen(argv[1], "rb");
+    int optindex = 0;
+    char *src_file = NULL;
+    char *dest_file = NULL;
+    int ret;
+    while((ret = getopt(argc, argv, "i:o:h")) != -1) {
+        switch (ret) {
+            case 0:
+                help(argv[0]);
+                break;
+            case 1:
+                break;
+            case 'i':
+                src_file = optarg;
+                break;
+            case 'o':
+                dest_file = optarg;
+                break;
+            case 'h':
+                help(argv[0]);
+                return 1;
+            default:
+                break;
+        }
+    }
+    if(src_file == NULL) {
+        fprintf(stderr, "you must specify the ssf file to convert (see -h for options).\n");
+        return -1;
+    }
+    if(dest_file == NULL) {
+        // use the default option
+        dest_file = (char *)default_dest;
+    }
+
+    FILE *fin = fopen(src_file, "rb");
+    if (!fin) {
+        if(errno == ENOENT) {
+            fprintf(stderr, "error opening file %s, %s\n", src_file, strerror(errno));
+            return -1;
+        }
+        else {
+            fprintf(stderr, "unknown error: %s\n", strerror(errno));
+            return -1;
+        }
+    }
+
     unsigned char buf[MAX_BYTE];
 
     fread((void *)buf, sizeof(unsigned char), MAX_BYTE, fin);
@@ -29,21 +86,15 @@ int main(int argc, char **argv) {
     QByteArray unpacked;
     do_uncompress(buf, file_size, unpacked);
 
-    // std::cout << unpacked.data() << std::endl;
-
-    // Then we get each file and write the config
-    if(argv[2] == NULL) {
-        do_extract(unpacked, "skin_dir");
-        do_convert("skin_dir");
-        printf("Skin saved to %s", "skin_dir");
-    } else {
-        do_extract(unpacked, argv[2]);
-        do_convert(argv[2]);
-        printf("Skin saved to %s\n", argv[2]);
-    }
-
-
-    // TODO: trans_config();
+    do_extract(unpacked, dest_file);
+    do_convert(dest_file);
+    printf("Skin saved to %s.\n", dest_file);
 
     return 0;
+}
+
+void help(char *progname) {
+    printf("Usage: %s -i input.ssf -o output_dir\n", progname);
+    printf("-i path to input ssf file\n");
+    printf("-o path to output skin dir (default: skin_converted)\n");
 }
