@@ -33,7 +33,7 @@ void u16tou8(const char *filename_lower, const char *destname_lower) {
     file.open(QFile::ReadOnly);
 
     QByteArray content = file.readAll();
-    auto u8_string = QString::fromUtf16((quint16 *)content.data(), content.size() / 2);
+    auto u8_string = QString::fromUtf16((quint16 *) content.data(), content.size() / 2);
 #ifdef DEBUG
     {
         int cnt = 0;
@@ -70,7 +70,8 @@ int do_convert(const char *skindir) {
 
     // TODO: remove the iconv call
     QDir dir(skindir);
-    u16tou8(dir.absoluteFilePath("skin.ini").toStdString().c_str(), dir.absoluteFilePath("skin.ini.u8").toStdString().c_str());
+    u16tou8(dir.absoluteFilePath("skin.ini").toStdString().c_str(),
+            dir.absoluteFilePath("skin.ini.u8").toStdString().c_str());
 
     QSettings ssfconf(dir.filePath("skin.ini.u8"), QSettings::IniFormat);
     ssfconf.setIniCodec("UTF-8");
@@ -81,7 +82,8 @@ int do_convert(const char *skindir) {
     fcitxconf.beginGroup("SkinInfo");
     fcitxconf.setValue("Name", "[CONVERT FROM SSF]" + ssfconf.value("skin_name").toString());
     fcitxconf.setValue("Version", ssfconf.value("skin_version").toString());
-    fcitxconf.setValue("Author", ssfconf.value("skin_author").toString() + "<" + ssfconf.value("skin_email").toString() + ">");
+    fcitxconf.setValue("Author",
+                       ssfconf.value("skin_author").toString() + "<" + ssfconf.value("skin_email").toString() + ">");
     fcitxconf.setValue("Desc", ssfconf.value("skin_info").toString());
     fcitxconf.endGroup();
 
@@ -89,35 +91,35 @@ int do_convert(const char *skindir) {
     fcitxconf.beginGroup("SkinFont");
     fcitxconf.setValue("FontSize", ssfconf.value("font_size").toInt());
     // we need to add font_pix to the offset
-    int font_pix = (int)(ssfconf.value("font_size").toInt() * pt2px_scale);
+    int font_pix = (int) (ssfconf.value("font_size").toInt() * pt2px_scale);
     fcitxconf.setValue("MenuFontSize", ssfconf.value("font_size").toInt() - 3);
     fcitxconf.setValue("RespectDPI", true);
 
     // zhongwen_first_color => FirstCandColor
     auto val = ssfconf.value("zhongwen_first_color");
-    uint32_t ptr = val.toString().toInt(nullptr, 16);
+    uint32_t ptr = val.toString().toUInt(nullptr, 16);
     // printf("%X", ptr);
     char buf[MAX_CHARS];
-    sprintf(buf, "%d %d %d", (ptr & 0xFF0000) >> 16, (ptr & 0x00FF00) >> 8, ptr & 0x0000FF);
+    sprintf(buf, "%d %d %d", (ptr & 0xFF0000U) >> 16, (ptr & 0x00FF00U) >> 8, ptr & 0x0000FFU);
     // fcitxconf.setValue("FirstCandColor", QString(buf));
 
     // zhongwen_first_color => UserPhraseColor
     val = ssfconf.value("pinyin_color");
-    ptr = val.toString().toInt(nullptr, 16);
+    ptr = val.toString().toUInt(nullptr, 16);
     // PSST: sogou is fxxking your brain with out of order RGB string, they use BGR instead ,so we need to translate here
-    sprintf(buf, "%d %d %d", ptr & 0x0000FF, (ptr & 0x00FF00) >> 8, (ptr & 0xFF0000) >> 16);
+    sprintf(buf, "%d %d %d", ptr & 0x0000FFU, (ptr & 0x00FF00U) >> 8, (ptr & 0xFF0000U) >> 16);
     fcitxconf.setValue("UserPhraseColor", QString(buf));
     fcitxconf.setValue("InputColor", QString(buf));
     fcitxconf.setValue("CodeColor", QString(buf));
 
     val = ssfconf.value("zhongwen_first_color");
-    ptr = val.toString().toInt(nullptr, 16);
-    sprintf(buf, "%d %d %d", ptr & 0x0000FF, (ptr & 0x00FF00) >> 8, (ptr & 0xFF0000) >> 16);
+    ptr = val.toString().toUInt(nullptr, 16);
+    sprintf(buf, "%d %d %d", ptr & 0x0000FFU, (ptr & 0x00FF00U) >> 8, (ptr & 0xFF0000U) >> 16);
     fcitxconf.setValue("FirstCandColor", QString(buf));
 
     val = ssfconf.value("zhongwen_color");
-    ptr = val.toString().toInt(nullptr, 16);
-    sprintf(buf, "%d %d %d", ptr & 0x0000FF, (ptr & 0x00FF00) >> 8, (ptr & 0xFF0000) >> 16);
+    ptr = val.toString().toUInt(nullptr, 16);
+    sprintf(buf, "%d %d %d", ptr & 0x0000FFU, (ptr & 0x00FF00U) >> 8, (ptr & 0xFF0000U) >> 16);
     fcitxconf.setValue("OtherColor", QString(buf));
     fcitxconf.setValue("IndexColor", QString(buf));
 
@@ -142,7 +144,7 @@ int do_convert(const char *skindir) {
     // we need to open the picture first
     QString input_bar_file_name = ssfconf.value("pic").toString().toLower();
     QImage input_bar_pixmap(dir.filePath(input_bar_file_name));
-    if(input_bar_pixmap.isNull()) {
+    if (input_bar_pixmap.isNull()) {
         fprintf(stderr, "FAIL TO OPEN file %s", input_bar_file_name.toStdString().c_str());
         exit(-1);
     }
@@ -168,7 +170,7 @@ int do_convert(const char *skindir) {
 
     // TODO: 在搜狗里对于输入区域的左右对齐是有另外调整的，可是在 fcitx 里就只有管理九宫格的 MargineLeft 和 Right 同时用来控制对齐，这其实就有些难受了
     fcitxconf.setValue("MarginLeft", marge_left);
-    fcitxconf.setValue("MarginRight",  marge_right);
+    fcitxconf.setValue("MarginRight", marge_right);
 
     fcitxconf.setValue("MarginTop", pinyin_marge_top + font_pix);
     fcitxconf.setValue("MarginBottom", pixh - font_pix - sep_zhongwen - font_pix - pinyin_marge_top);

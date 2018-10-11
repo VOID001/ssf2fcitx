@@ -7,20 +7,24 @@
 #include <QByteArray>
 #include <iostream>
 #include <getopt.h>
-#include <errno.h>
+#include <cerrno>
 
-#define MAX_BYTE 1024 * 1024
+#define MAX_BYTE (1024 * 1024)
 
-int do_uncompress(const unsigned char *ssfbin, int size, QByteArray&);
-int do_extract(QByteArray& input, const char *dirname);
+int do_uncompress(const unsigned char *ssfbin, int size, QByteArray &);
+
+int do_extract(QByteArray &input, const char *dirname);
+
 int do_convert(const char *skindir);
+
 void init_logger();
+
 void help(char *progname);
 
 const struct option opts[] = {
-        {"input", required_argument, 0, 0},
-        {"output", required_argument, 0, 0},
-        {0, 0, 0, 0}
+        {"input",  required_argument, nullptr, 0},
+        {"output", required_argument, nullptr, 0},
+        {nullptr,  0,                 nullptr, 0}
 };
 
 const char default_dest[] = "skin_converted";
@@ -30,10 +34,10 @@ QMessageLogger LOG;
 // usage: take the input file name from command line arg, and produce dump.out in the current directory
 int main(int argc, char **argv) {
     int optindex = 0;
-    char *src_file = NULL;
-    char *dest_file = NULL;
+    char *src_file = nullptr;
+    char *dest_file = nullptr;
     int ret;
-    while((ret = getopt(argc, argv, "i:o:h")) != -1) {
+    while ((ret = getopt(argc, argv, "i:o:h")) != -1) {
         switch (ret) {
             case 0:
                 help(argv[0]);
@@ -53,22 +57,21 @@ int main(int argc, char **argv) {
                 break;
         }
     }
-    if(src_file == NULL) {
+    if (src_file == nullptr) {
         fprintf(stderr, "you must specify the ssf file to convert (see -h for options).\n");
         return -1;
     }
-    if(dest_file == NULL) {
+    if (dest_file == nullptr) {
         // use the default option
-        dest_file = (char *)default_dest;
+        dest_file = (char *) default_dest;
     }
 
     FILE *fin = fopen(src_file, "rb");
     if (!fin) {
-        if(errno == ENOENT) {
+        if (errno == ENOENT) {
             fprintf(stderr, "error opening file %s, %s\n", src_file, strerror(errno));
             return -1;
-        }
-        else {
+        } else {
             fprintf(stderr, "unknown error: %s\n", strerror(errno));
             return -1;
         }
@@ -76,15 +79,15 @@ int main(int argc, char **argv) {
 
     unsigned char buf[MAX_BYTE];
 
-    fread((void *)buf, sizeof(unsigned char), MAX_BYTE, fin);
+    fread((void *) buf, sizeof(unsigned char), MAX_BYTE, fin);
     fseek(fin, 0, SEEK_END);
-    size_t file_size = ftell(fin);
+    auto file_size = ftell(fin);
     rewind(fin);
     fclose(fin);
 
     // First get the raw data pack
     QByteArray unpacked;
-    do_uncompress(buf, file_size, unpacked);
+    do_uncompress(buf, static_cast<int>(file_size), unpacked);
 
     do_extract(unpacked, dest_file);
     do_convert(dest_file);
