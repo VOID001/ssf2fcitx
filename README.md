@@ -15,6 +15,12 @@ NOW ONLY support input bar skin translate, the tray and menu bar is not supporte
 2. copy the directory `/path/to/save/theme` to either $XDG_CONFIG_HOME/fcitx/skin or /usr/share/fcitx/skin
 3. Then you can switch to the theme, enjoy it!
 
+## Supported Function
+
+1. Decrypt ssf archive
+2. Draw the input bar without overlay image
+3. Draw the input bar with overlay image (testing)
+
 ## Screenshots
 
 The following skins are converted directly from ssf, no any manual modifications
@@ -27,7 +33,7 @@ The following skins are converted directly from ssf, no any manual modifications
 * The converter now support many of sogou skin conversion, however there are still a lot we don't support yet.
   * we now don't support vertical layout
   * we now don't support skins with GIFs in it(I don't know whether fcitx support it)
-  * We now don't support skins with overlay pictures
+  * We now don't support skins with overlay pictures [ now supported, testing ]
 
 * The skin converted may have problem with left, right align, sometimes you need to manually adjust it (Just Change the value MarginLeft & MarginRight in skin config file
 

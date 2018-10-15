@@ -169,8 +169,6 @@ int do_convert(const char *skindir) {
     fcitxconf.setValue("MarginLeft", marge_left);
     fcitxconf.setValue("MarginRight", marge_right);
 
-    printf("pinyin_marge_top = %d, font_pix = %d \n", pinyin_marge_top, font_pix);
-
     fcitxconf.setValue("MarginTop", pinyin_marge_top + font_pix + sep_pinyin);
     fcitxconf.setValue("MarginBottom", pixh - (font_pix + sep_zhongwen) - (font_pix + pinyin_marge_top + sep_pinyin));
 
