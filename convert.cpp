@@ -18,7 +18,7 @@
 
 #define MAX_CHARS 255
 
-const double pt2px_scale = 1.333;
+const double pt2px_scale = 1.0;     // TODO: This value is not accurate now
 
 char convert_from_keys[][MAX_CHARS] = {
         "General/zhongwen_first_color",
@@ -63,6 +63,7 @@ void u16tou8(const char *filename_lower, const char *destname_lower) {
     dest_file.close();
 }
 
+// TODO: Fix seperator line
 int do_convert(const char *skindir) {
     /*
      * First convert config file to UTF8 encoding
@@ -93,7 +94,7 @@ int do_convert(const char *skindir) {
     // we need to add font_pix to the offset
     int font_pix = (int) (ssfconf.value("font_size").toInt() * pt2px_scale);
     fcitxconf.setValue("MenuFontSize", ssfconf.value("font_size").toInt() - 3);
-    fcitxconf.setValue("RespectDPI", true);
+    fcitxconf.setValue("RespectDPI", "False");
 
     // zhongwen_first_color => FirstCandColor
     auto val = ssfconf.value("zhongwen_first_color");
@@ -172,14 +173,13 @@ int do_convert(const char *skindir) {
     fcitxconf.setValue("MarginLeft", marge_left);
     fcitxconf.setValue("MarginRight", marge_right);
 
-    fcitxconf.setValue("MarginTop", pinyin_marge_top + font_pix);
-    fcitxconf.setValue("MarginBottom", pixh - font_pix - sep_zhongwen - font_pix - pinyin_marge_top);
+    printf("pinyin_marge_top = %d, font_pix = %d \n", pinyin_marge_top, font_pix);
 
-    //  val < 0 means offset up, > 0 means down
-    // fcitxconf.setValue("InputPos", pinyin_marge_top - marge_top);
-    // fcitxconf.setValue("OutputPos", pixh - marge_bot - zhongwen_marge_bot);
+    fcitxconf.setValue("MarginTop", pinyin_marge_top + font_pix + sep_pinyin);
+    fcitxconf.setValue("MarginBottom", pixh - (font_pix + sep_zhongwen) - (font_pix + pinyin_marge_top + sep_pinyin));
 
-    fcitxconf.setValue("InputPos", -sep_pinyin);
+    // We try set the input pos fix, and move the seperator line
+    fcitxconf.setValue("InputPos", - sep_pinyin);
     // fcitxconf.setValue("OutputPos", pixh - pinyin_marge_top - zhongwen_marge_bot - font_pix);
     fcitxconf.setValue("OutputPos", font_pix + sep_zhongwen);
 

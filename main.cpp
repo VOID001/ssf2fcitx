@@ -17,8 +17,6 @@ int do_extract(QByteArray &input, const char *dirname);
 
 int do_convert(const char *skindir);
 
-void init_logger();
-
 void help(char *progname);
 
 const struct option opts[] = {
