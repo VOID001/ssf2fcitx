@@ -139,8 +139,6 @@ int do_convert(const char *skindir) {
     fcitxconf.setValue("BackImg", ssfconf.value("pic").toString().toLower());
     fcitxconf.setValue("FillHorizontal", "Copy");
     fcitxconf.setValue("CursorColor", "255 255 255");
-    // TODO: 搞清楚 Margin 的关系，优先搞清楚 SkinInputBar 的
-    // TODO: Read the fcitx skin code and draw the margin picture
 
     // we need to open the picture first
     QString input_bar_file_name = ssfconf.value("pic").toString().toLower();
@@ -149,9 +147,9 @@ int do_convert(const char *skindir) {
         fprintf(stderr, "FAIL TO OPEN file %s", input_bar_file_name.toStdString().c_str());
         exit(-1);
     }
+
     int pixw = input_bar_pixmap.width();
     int pixh = input_bar_pixmap.height();
-    // std::cout << "W=" << pixw << std::endl << "H=" << pixh << std::endl;
 
     int marge_left = ssfconf.value("layout_horizontal").toStringList().at(1).toInt();
     int marge_right = ssfconf.value("layout_horizontal").toStringList().at(2).toInt();
@@ -159,11 +157,9 @@ int do_convert(const char *skindir) {
     int marge_top = ssfconf.value("layout_vertical").toStringList().at(1).toInt();
     int marge_bot = ssfconf.value("layout_vertical").toStringList().at(2).toInt();
 
-    // TODO: Fix input pos and output pos
     int pinyin_marge_top = ssfconf.value("pinyin_marge").toStringList().at(0).toInt();
     int pinyin_marge_left = ssfconf.value("pinyin_marge").toStringList().at(2).toInt();
     int pinyin_marge_right = ssfconf.value("pinyin_marge").toStringList().at(3).toInt();
-
     int zhongwen_marge_bot = ssfconf.value("zhongwen_marge").toStringList().at(1).toInt();
 
     int sep_zhongwen = ssfconf.value("zhongwen_marge").toStringList().at(0).toInt();
@@ -182,6 +178,19 @@ int do_convert(const char *skindir) {
     fcitxconf.setValue("InputPos", - sep_pinyin);
     // fcitxconf.setValue("OutputPos", pixh - pinyin_marge_top - zhongwen_marge_bot - font_pix);
     fcitxconf.setValue("OutputPos", font_pix + sep_zhongwen);
+
+    // Let's draw the overlay if necessary, now very STUB, we assume it is Right Down Corner Aligned
+    // And we assume the key is named custom0_*
+    if (!ssfconf.value("custom0_display").isNull()) {
+        QString overlay_file_name = ssfconf.value("custom0").toString().toLower();
+        QImage overlay_pixmap(dir.filePath(overlay_file_name));
+        int ov_pixw = overlay_pixmap.width();
+        int ov_pixh = overlay_pixmap.height();
+        fcitxconf.setValue("OverlayDock", "BottomRight");
+        fcitxconf.setValue("OverlayOffsetX", -ov_pixw);
+        fcitxconf.setValue("OverlayOffsetY", -ov_pixh);
+        fcitxconf.setValue("Overlay", overlay_file_name);
+    }
 
     // TODO: generate back arrow and forward arrow for fcitx
     // TODO: STUB NOW
