@@ -6,7 +6,6 @@
 #include <iostream>
 #include <openssl/aes.h>
 #include <vector>
-#include <zip.h>
 #include <unitypes.h>
 #include <QByteArray>
 #include <QDataStream>
